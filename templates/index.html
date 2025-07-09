@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bankruptcy Prediction Model - Enhanced</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 40px 0;
+      }
+
+      .header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        margin-bottom: 10px;
+        background: linear-gradient(45deg, #fff, #f0f0f0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 300;
+      }
+
+      .nav-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+        gap: 10px;
+      }
+
+      .nav-tab {
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .nav-tab.active {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-tab:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .form-section,
+      .results-section,
+      .analytics-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .results-section {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.9rem;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .form-categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+      }
+
+      .category {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 20px;
+        border-left: 4px solid #667eea;
+      }
+
+      .category h3 {
+        color: #667eea;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .predict-btn,
+      .export-btn {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+      }
+
+      .export-btn {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        box-shadow: 0 8px 16px rgba(72, 187, 120, 0.3);
+      }
+
+      .predict-btn:hover,
+      .export-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+      }
+
+      .export-btn:hover {
+        box-shadow: 0 12px 24px rgba(72, 187, 120, 0.4);
+      }
+
+      .predict-btn:active,
+      .export-btn:active {
+        transform: translateY(-1px);
+      }
+
+      .result-card {
+        text-align: center;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+      }
+
+      .result-safe {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        box-shadow: 0 8px 16px rgba(72, 187, 120, 0.3);
+      }
+
+      .result-risk {
+        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        color: white;
+        box-shadow: 0 8px 16px rgba(245, 101, 101, 0.3);
+      }
+
+      .result-icon {
+        font-size: 3rem;
+        margin-bottom: 10px;
+      }
+
+      .result-text {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .result-subtext {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .confidence-bar {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        height: 8px;
+        margin-top: 15px;
+        overflow: hidden;
+      }
+
+      .confidence-fill {
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        transition: width 0.8s ease;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .info-panel {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .info-panel h4 {
+        color: white;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .info-panel ul {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+
+      .info-panel li {
+        margin-bottom: 5px;
+      }
+
+      .analytics-card h3 {
+        color: #4a5568;
+        margin-bottom: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 250px;
+        margin-bottom: 20px;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .metric-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+      }
+
+      .metric-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 5px;
+      }
+
+      .metric-label {
+        font-size: 0.8rem;
+        color: #718096;
+        font-weight: 500;
+      }
+
+      .export-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .export-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .export-btn {
+        flex: 1;
+        min-width: 120px;
+        margin: 0;
+      }
+
+      .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .history-table th,
+      .history-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .history-table th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: #4a5568;
+      }
+
+      .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .status-safe {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+
+      .status-risk {
+        background: #fed7d7;
+        color: #742a2a;
+      }
+
+      .floating-shapes {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: -1;
+      }
+
+      .shape {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 20s infinite linear;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+        }
+        100% {
+          transform: translateY(-100px) rotate(360deg);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .form-categories {
+          grid-template-columns: 1fr;
+        }
+
+        .nav-tabs {
+          flex-wrap: wrap;
+        }
+
+        .export-buttons {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="floating-shapes">
+      <div
+        class="shape"
+        style="left: 10%; width: 80px; height: 80px; animation-delay: 0s"
+      ></div>
+      <div
+        class="shape"
+        style="left: 20%; width: 120px; height: 120px; animation-delay: 2s"
+      ></div>
+      <div
+        class="shape"
+        style="left: 35%; width: 60px; height: 60px; animation-delay: 4s"
+      ></div>
+      <div
+        class="shape"
+        style="left: 50%; width: 100px; height: 100px; animation-delay: 6s"
+      ></div>
+      <div
+        class="shape"
+        style="left: 65%; width: 80px; height: 80px; animation-delay: 8s"
+      ></div>
+      <div
+        class="shape"
+        style="left: 80%; width: 140px; height: 140px; animation-delay: 10s"
+      ></div>
+      <div
+        class="shape"
+        style="left: 90%; width: 90px; height: 90px; animation-delay: 12s"
+      ></div>
+    </div>
+
+    <div class="container">
+      <div class="header">
+        <h1>🏦 Bankruptcy Prediction Model</h1>
+        <p>Advanced AI-powered financial risk assessment with analytics</p>
+      </div>
+
+      <div class="nav-tabs">
+        <div class="nav-tab active" data-tab="prediction">📊 Prediction</div>
+        <div class="nav-tab" data-tab="analytics">📈 Analytics</div>
+        <div class="nav-tab" data-tab="history">📋 History</div>
+      </div>
+
+      <!-- Prediction Tab -->
+      <div class="tab-content active" id="prediction">
+        <div class="main-content">
+          <div class="form-section">
+            <h2 style="margin-bottom: 25px; color: #4a5568; font-weight: 600">
+              Company Financial Data
+            </h2>
+
+            <form id="bankruptcyForm">
+              <div class="form-categories">
+                <div class="category">
+                  <h3>Model Features</h3>
+                  <div class="form-group">
+                    <label for="net_income_to_stockholder_s_equity"
+                      >Net Income to Stockholder's Equity</label
+                    >
+                    <input
+                      type="number"
+                      id="net_income_to_stockholder_s_equity"
+                      name="net_income_to_stockholder_s_equity"
+                      step="0.0001"
+                      placeholder="0.15"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="net_value_growth_rate"
+                      >Net Value Growth Rate</label
+                    >
+                    <input
+                      type="number"
+                      id="net_value_growth_rate"
+                      name="net_value_growth_rate"
+                      step="0.0001"
+                      placeholder="0.05"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="persistent_eps_in_the_last_four_seasons"
+                      >Persistent EPS in the Last Four Seasons</label
+                    >
+                    <input
+                      type="number"
+                      id="persistent_eps_in_the_last_four_seasons"
+                      name="persistent_eps_in_the_last_four_seasons"
+                      step="0.0001"
+                      placeholder="1.20"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="borrowing_dependency"
+                      >Borrowing dependency</label
+                    >
+                    <input
+                      type="number"
+                      id="borrowing_dependency"
+                      name="borrowing_dependency"
+                      step="0.0001"
+                      placeholder="0.30"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="per_share_net_profit_before_tax_yuan"
+                      >Per Share Net profit before tax (Yuan ¥)</label
+                    >
+                    <input
+                      type="number"
+                      id="per_share_net_profit_before_tax_yuan"
+                      name="per_share_net_profit_before_tax_yuan"
+                      step="0.0001"
+                      placeholder="2.50"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="total_debt_total_net_worth"
+                      >Total debt/Total net worth</label
+                    >
+                    <input
+                      type="number"
+                      id="total_debt_total_net_worth"
+                      name="total_debt_total_net_worth"
+                      step="0.0001"
+                      placeholder="0.60"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="net_value_per_share_a"
+                      >Net Value Per Share (A)</label
+                    >
+                    <input
+                      type="number"
+                      id="net_value_per_share_a"
+                      name="net_value_per_share_a"
+                      step="0.0001"
+                      placeholder="1.80"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="net_income_to_total_assets"
+                      >Net Income to Total Assets</label
+                    >
+                    <input
+                      type="number"
+                      id="net_income_to_total_assets"
+                      name="net_income_to_total_assets"
+                      step="0.0001"
+                      placeholder="0.10"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="degree_of_financial_leverage_dfl"
+                      >Degree of Financial Leverage (DFL)</label
+                    >
+                    <input
+                      type="number"
+                      id="degree_of_financial_leverage_dfl"
+                      name="degree_of_financial_leverage_dfl"
+                      step="0.0001"
+                      placeholder="1.50"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="interest_expense_ratio"
+                      >Interest Expense Ratio</label
+                    >
+                    <input
+                      type="number"
+                      id="interest_expense_ratio"
+                      name="interest_expense_ratio"
+                      step="0.0001"
+                      placeholder="0.04"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="net_value_per_share_b"
+                      >Net Value Per Share (B)</label
+                    >
+                    <input
+                      type="number"
+                      id="net_value_per_share_b"
+                      name="net_value_per_share_b"
+                      step="0.0001"
+                      placeholder="1.60"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="net_profit_before_tax_paid_in_capital"
+                      >Net profit before tax/Paid-in capital</label
+                    >
+                    <input
+                      type="number"
+                      id="net_profit_before_tax_paid_in_capital"
+                      name="net_profit_before_tax_paid_in_capital"
+                      step="0.0001"
+                      placeholder="0.12"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label
+                      for="interest_coverage_ratio_interest_expense_to_ebit"
+                      >Interest Coverage Ratio (Interest expense to EBIT)</label
+                    >
+                    <input
+                      type="number"
+                      id="interest_coverage_ratio_interest_expense_to_ebit"
+                      name="interest_coverage_ratio_interest_expense_to_ebit"
+                      step="0.0001"
+                      placeholder="4.00"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="non_industry_income_and_expenditure_revenue"
+                      >Non-industry income and expenditure/revenue</label
+                    >
+                    <input
+                      type="number"
+                      id="non_industry_income_and_expenditure_revenue"
+                      name="non_industry_income_and_expenditure_revenue"
+                      step="0.0001"
+                      placeholder="0.01"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="net_value_per_share_c"
+                      >Net Value Per Share (C)</label
+                    >
+                    <input
+                      type="number"
+                      id="net_value_per_share_c"
+                      name="net_value_per_share_c"
+                      step="0.0001"
+                      placeholder="1.70"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="predict-btn">
+                🔮 Predict Bankruptcy Risk
+              </button>
+            </form>
+          </div>
+
+          <div class="results-section">
+            <h3 style="margin-bottom: 20px; color: #4a5568; font-weight: 600">
+              Prediction Results
+            </h3>
+
+            <div id="initialState">
+              <div
+                style="text-align: center; color: #a0aec0; padding: 40px 20px"
+              >
+                <div style="font-size: 3rem; margin-bottom: 15px">🤖</div>
+                <p style="font-size: 1.1rem; margin-bottom: 10px">
+                  Ready to analyze
+                </p>
+                <p style="font-size: 0.9rem">
+                  Fill in the financial data and click predict to get your
+                  bankruptcy risk assessment
+                </p>
+              </div>
+            </div>
+
+            <div id="loading" class="loading">
+              <div class="spinner"></div>
+              <p>Analyzing financial data...</p>
+            </div>
+
+            <div id="results" style="display: none">
+              <div id="resultCard" class="result-card">
+                <div id="resultIcon" class="result-icon"></div>
+                <div id="resultText" class="result-text"></div>
+                <div id="resultSubtext" class="result-subtext"></div>
+                <div id="confidenceBar" class="confidence-bar">
+                  <div id="confidenceFill" class="confidence-fill"></div>
+                </div>
+                <div
+                  id="confidenceText"
+                  style="margin-top: 10px; font-size: 0.9rem"
+                ></div>
+              </div>
+
+              <div
+                style="
+                  background: #f8fafc;
+                  border-radius: 10px;
+                  padding: 15px;
+                  margin-top: 20px;
+                "
+              >
+                <h4
+                  style="color: #4a5568; margin-bottom: 10px; font-size: 0.9rem"
+                >
+                  Key Factors:
+                </h4>
+                <ul
+                  id="keyFactors"
+                  style="font-size: 0.8rem; color: #718096; line-height: 1.6"
+                ></ul>
+              </div>
+
+              <div class="export-section">
+                <h4 style="color: white; margin-bottom: 15px">
+                  📥 Export Results
+                </h4>
+                <div class="export-buttons">
+                  <button class="export-btn" onclick="exportToPDF()">
+                    📄 Export PDF
+                  </button>
+                  <button class="export-btn" onclick="exportToCSV()">
+                    📊 Export CSV
+                  </button>
+                  <button class="export-btn" onclick="exportToJSON()">
+                    📁 Export JSON
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div class="tab-content" id="analytics">
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <h3>📈 Risk Distribution</h3>
+            <div class="chart-container">
+              <canvas id="riskChart"></canvas>
+            </div>
+            <div class="metric-grid">
+              <div class="metric-card">
+                <div class="metric-value" id="totalPredictions">0</div>
+                <div class="metric-label">Total Predictions</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value" id="highRiskCount">0</div>
+                <div class="metric-label">High Risk</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value" id="lowRiskCount">0</div>
+                <div class="metric-label">Low Risk</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <h3>📊 Key Metrics Trends</h3>
+            <div class="chart-container">
+              <canvas id="metricsChart"></canvas>
+            </div>
+            <div class="metric-grid">
+              <div class="metric-card">
+                <div class="metric-value" id="avgROA">0.00</div>
+                <div class="metric-label">Avg ROA</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value" id="avgDebtRatio">0.00</div>
+                <div class="metric-label">Avg Debt Ratio</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value" id="avgCurrentRatio">0.00</div>
+                <div class="metric-label">Avg Current Ratio</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <h3>🎯 Prediction Accuracy</h3>
+            <div class="chart-container">
+              <canvas id="accuracyChart"></canvas>
+            </div>
+            <div class="metric-grid">
+              <div class="metric-card">
+                <div class="metric-value" id="avgConfidence">0.0%</div>
+                <div class="metric-label">Avg Confidence</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value" id="modelAccuracy">95.2%</div>
+                <div class="metric-label">Model Accuracy</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <h3>🔍 Risk Factors Analysis</h3>
+            <div class="chart-container">
+              <canvas id="factorsChart"></canvas>
+            </div>
+            <div style="margin-top: 20px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  margin-bottom: 10px;
+                "
+              >
+                <span style="font-size: 0.9rem">Low ROA Impact</span>
+                <span style="font-size: 0.9rem; font-weight: 600">High</span>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  margin-bottom: 10px;
+                "
+              >
+                <span style="font-size: 0.9rem">High Debt Ratio</span>
+                <span style="font-size: 0.9rem; font-weight: 600">Medium</span>
+              </div>
+              <div style="display: flex; justify-content: space-between">
+                <span style="font-size: 0.9rem">Poor Liquidity</span>
+                <span style="font-size: 0.9rem; font-weight: 600">High</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Tab -->
+      <div class="tab-content" id="history">
+        <div class="analytics-card">
+          <h3>📋 Prediction History</h3>
+          <div style="margin-bottom: 20px">
+            <div class="export-buttons">
+              <button class="export-btn" onclick="exportHistoryToCSV()">
+                📊 Export History CSV
+              </button>
+              <button class="export-btn" onclick="clearHistory()">
+                🗑️ Clear History
+              </button>
+            </div>
+          </div>
+          <div style="overflow-x: auto">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Company</th>
+                  <th>Risk Level</th>
+                  <th>Confidence</th>
+                  <th>ROA</th>
+                  <th>Debt Ratio</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- History entries will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <h4>📋 How to Use This Enhanced Tool</h4>
+        <ul>
+          <li>
+            <strong>Prediction Tab:</strong> Enter financial data and get
+            instant bankruptcy risk assessment
+          </li>
+          <li>
+            <strong>Analytics Tab:</strong> View comprehensive analytics and
+            trends from all predictions
+          </li>
+          <li>
+            <strong>History Tab:</strong> Review past predictions and export
+            historical data
+          </li>
+          <li>
+            <strong>Export Options:</strong> Download results in PDF, CSV, or
+            JSON formats
+          </li>
+          <li>
+            <strong>Data Visualization:</strong> Interactive charts show risk
+            patterns and key metrics
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+      // Global variables
+      let predictionHistory = JSON.parse(
+        localStorage.getItem("bankruptcyHistory") || "[]"
+      );
+      let charts = {};
+      let currentPrediction = null;
+
+      // Tab switching functionality
+      document.querySelectorAll(".nav-tab").forEach((tab) => {
+        tab.addEventListener("click", function () {
+          const tabName = this.getAttribute("data-tab");
+          switchTab(tabName);
+        });
+      });
+
+      function switchTab(tabName) {
+        // Update active tab
+        document.querySelectorAll(".nav-tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+        document
+          .querySelector(`[data-tab="${tabName}"]`)
+          .classList.add("active");
+
+        // Update active content
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.classList.remove("active");
+        });
+        document.getElementById(tabName).classList.add("active");
+
+        // Initialize charts if switching to analytics
+        if (tabName === "analytics") {
+          setTimeout(initializeCharts, 100);
+        }
+
+        // Update history table if switching to history
+        if (tabName === "history") {
+          updateHistoryTable();
+        }
+      }
+
+      // Remove the old mock predictBankruptcy function and update form submission to use backend
+
+      document
+        .getElementById("bankruptcyForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          document.getElementById("initialState").style.display = "none";
+          document.getElementById("results").style.display = "none";
+          document.getElementById("loading").style.display = "block";
+
+          const formData = new FormData(this);
+          const data = Object.fromEntries(formData);
+
+          try {
+            const response = await fetch("/predict", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+            let result;
+            if (!response.ok) {
+              // Try to get error message from backend
+              try {
+                const errorData = await response.json();
+                console.error("Backend error:", errorData);
+                alert(errorData.error || "Error occurred during prediction.");
+              } catch (jsonErr) {
+                console.error("Non-JSON error response", jsonErr);
+                alert("Error occurred during prediction.");
+              }
+              document.getElementById("loading").style.display = "none";
+              return;
+            }
+            result = await response.json();
+            currentPrediction = {
+              prediction: result.prediction,
+              confidence:
+                result.confidence !== undefined
+                  ? result.confidence
+                  : result.probability,
+              riskScore:
+                result.confidence !== undefined
+                  ? result.confidence
+                  : result.probability,
+              inputData: data,
+            };
+            saveToHistory(currentPrediction);
+            document.getElementById("loading").style.display = "none";
+            displayResults(currentPrediction);
+          } catch (error) {
+            console.error("Prediction error:", error);
+            document.getElementById("loading").style.display = "none";
+            alert("Error occurred during prediction. Please try again.");
+          }
+        });
+
+      function displayResults(result) {
+        console.log("displayResults called with:", result);
+        const { prediction, confidence, riskScore } = result;
+
+        const resultCard = document.getElementById("resultCard");
+        const resultIcon = document.getElementById("resultIcon");
+        const resultText = document.getElementById("resultText");
+        const resultSubtext = document.getElementById("resultSubtext");
+        const confidenceFill = document.getElementById("confidenceFill");
+        const confidenceText = document.getElementById("confidenceText");
+        const keyFactors = document.getElementById("keyFactors");
+
+        if (prediction === 1) {
+          resultCard.className = "result-card result-risk";
+          resultIcon.textContent = "⚠️";
+          resultText.textContent = "High Bankruptcy Risk";
+          resultSubtext.textContent = "Immediate attention required";
+
+          keyFactors.innerHTML = `
+            <li>Consider improving cash flow management</li>
+            <li>Review debt restructuring options</li>
+            <li>Focus on operational efficiency</li>
+            <li>Seek professional financial advice</li>
+          `;
+        } else {
+          resultCard.className = "result-card result-safe";
+          resultIcon.textContent = "✅";
+          resultText.textContent = "Low Bankruptcy Risk";
+          resultSubtext.textContent = "Financial health appears stable";
+
+          keyFactors.innerHTML = `
+            <li>Maintain current financial discipline</li>
+            <li>Continue monitoring key metrics</li>
+            <li>Consider growth opportunities</li>
+            <li>Regular financial health checkups</li>
+          `;
+        }
+
+        confidenceFill.style.width = `${confidence * 100}%`;
+        confidenceText.textContent = `Confidence: ${(confidence * 100).toFixed(
+          1
+        )}%`;
+        console.log(
+          "confidenceText:",
+          confidenceText.textContent,
+          "confidence value:",
+          confidence
+        );
+
+        document.getElementById("results").style.display = "block";
+        document
+          .getElementById("results")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function saveToHistory(result) {
+        const historyEntry = {
+          id: Date.now(),
+          date: new Date().toISOString(),
+          company: `Company ${predictionHistory.length + 1}`,
+          prediction: result.prediction,
+          confidence: result.confidence,
+          riskScore: result.riskScore,
+          inputData: result.inputData,
+        };
+
+        predictionHistory.unshift(historyEntry);
+
+        // Keep only last 100 entries
+        if (predictionHistory.length > 100) {
+          predictionHistory = predictionHistory.slice(0, 100);
+        }
+
+        localStorage.setItem(
+          "bankruptcyHistory",
+          JSON.stringify(predictionHistory)
+        );
+      }
+
+      function updateHistoryTable() {
+        const tbody = document.getElementById("historyTableBody");
+        tbody.innerHTML = "";
+
+        predictionHistory.forEach((entry) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+                    <td>${new Date(entry.date).toLocaleDateString()}</td>
+                    <td>${entry.company}</td>
+                    <td><span class="status-badge ${
+                      entry.prediction === 1 ? "status-risk" : "status-safe"
+                    }">
+                        ${entry.prediction === 1 ? "High Risk" : "Low Risk"}
+                    </span></td>
+                    <td>${(entry.confidence * 100).toFixed(1)}%</td>
+                    <td>${parseFloat(
+                      entry.inputData.net_income_to_total_assets
+                    ).toFixed(3)}</td>
+                    <td>${parseFloat(
+                      entry.inputData.total_debt_total_net_worth
+                    ).toFixed(3)}</td>
+                    <td>
+                        <button onclick="deleteHistoryEntry(${
+                          entry.id
+                        })" style="background: #f56565; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+                    </td>
+                `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function deleteHistoryEntry(id) {
+        predictionHistory = predictionHistory.filter(
+          (entry) => entry.id !== id
+        );
+        localStorage.setItem(
+          "bankruptcyHistory",
+          JSON.stringify(predictionHistory)
+        );
+        updateHistoryTable();
+        updateAnalytics();
+      }
+
+      function clearHistory() {
+        if (confirm("Are you sure you want to clear all prediction history?")) {
+          predictionHistory = [];
+          localStorage.removeItem("bankruptcyHistory");
+          updateHistoryTable();
+          updateAnalytics();
+        }
+      }
+
+      function initializeCharts() {
+        initializeRiskChart();
+        initializeMetricsChart();
+        initializeAccuracyChart();
+        initializeFactorsChart();
+        updateAnalytics();
+      }
+
+      function initializeRiskChart() {
+        const ctx = document.getElementById("riskChart").getContext("2d");
+        if (charts.riskChart) charts.riskChart.destroy();
+
+        charts.riskChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Low Risk", "High Risk"],
+            datasets: [
+              {
+                data: [0, 0],
+                backgroundColor: ["#48bb78", "#f56565"],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+            },
+          },
+        });
+      }
+
+      function initializeMetricsChart() {
+        const ctx = document.getElementById("metricsChart").getContext("2d");
+        if (charts.metricsChart) charts.metricsChart.destroy();
+
+        charts.metricsChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: [],
+            datasets: [
+              {
+                label: "ROA",
+                data: [],
+                borderColor: "#667eea",
+                backgroundColor: "rgba(102, 126, 234, 0.1)",
+                fill: true,
+              },
+              {
+                label: "Debt Ratio",
+                data: [],
+                borderColor: "#f56565",
+                backgroundColor: "rgba(245, 101, 101, 0.1)",
+                fill: true,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+              },
+            },
+          },
+        });
+      }
+
+      function initializeAccuracyChart() {
+        const ctx = document.getElementById("accuracyChart").getContext("2d");
+        if (charts.accuracyChart) charts.accuracyChart.destroy();
+
+        charts.accuracyChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: ["60-70%", "70-80%", "80-90%", "90-100%"],
+            datasets: [
+              {
+                label: "Confidence Distribution",
+                data: [0, 0, 0, 0],
+                backgroundColor: ["#f56565", "#ed8936", "#48bb78", "#38a169"],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+              },
+            },
+          },
+        });
+      }
+
+      function initializeFactorsChart() {
+        const ctx = document.getElementById("factorsChart").getContext("2d");
+        if (charts.factorsChart) charts.factorsChart.destroy();
+
+        charts.factorsChart = new Chart(ctx, {
+          type: "radar",
+          data: {
+            labels: ["ROA", "Liquidity", "Leverage", "Growth", "Efficiency"],
+            datasets: [
+              {
+                label: "Risk Factors",
+                data: [0, 0, 0, 0, 0],
+                borderColor: "#667eea",
+                backgroundColor: "rgba(102, 126, 234, 0.2)",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              r: {
+                beginAtZero: true,
+                max: 1,
+              },
+            },
+          },
+        });
+      }
+
+      function updateAnalytics() {
+        const totalPredictions = predictionHistory.length;
+        const highRiskCount = predictionHistory.filter(
+          (p) => p.prediction === 1
+        ).length;
+        const lowRiskCount = totalPredictions - highRiskCount;
+
+        document.getElementById("totalPredictions").textContent =
+          totalPredictions;
+        document.getElementById("highRiskCount").textContent = highRiskCount;
+        document.getElementById("lowRiskCount").textContent = lowRiskCount;
+
+        if (totalPredictions > 0) {
+          const avgROA =
+            predictionHistory.reduce(
+              (sum, p) =>
+                sum + parseFloat(p.inputData.net_income_to_total_assets),
+              0
+            ) / totalPredictions;
+          const avgDebtRatio =
+            predictionHistory.reduce(
+              (sum, p) =>
+                sum + parseFloat(p.inputData.total_debt_total_net_worth),
+              0
+            ) / totalPredictions;
+          const avgConfidence =
+            predictionHistory.reduce((sum, p) => sum + p.confidence, 0) /
+            totalPredictions;
+
+          document.getElementById("avgROA").textContent = avgROA.toFixed(3);
+          document.getElementById("avgDebtRatio").textContent =
+            avgDebtRatio.toFixed(3);
+          document.getElementById("avgConfidence").textContent =
+            (avgConfidence * 100).toFixed(1) + "%";
+
+          // Update charts
+          if (charts.riskChart) {
+            charts.riskChart.data.datasets[0].data = [
+              lowRiskCount,
+              highRiskCount,
+            ];
+            charts.riskChart.update();
+          }
+
+          if (charts.metricsChart) {
+            const recent = predictionHistory.slice(0, 10).reverse();
+            charts.metricsChart.data.labels = recent.map(
+              (_, i) => `Entry ${i + 1}`
+            );
+            charts.metricsChart.data.datasets[0].data = recent.map((p) =>
+              parseFloat(p.inputData.net_income_to_total_assets)
+            );
+            charts.metricsChart.data.datasets[1].data = recent.map((p) =>
+              parseFloat(p.inputData.total_debt_total_net_worth)
+            );
+            charts.metricsChart.update();
+          }
+
+          if (charts.accuracyChart) {
+            const confidenceRanges = [0, 0, 0, 0];
+            predictionHistory.forEach((p) => {
+              const conf = p.confidence * 100;
+              if (conf >= 60 && conf < 70) confidenceRanges[0]++;
+              else if (conf >= 70 && conf < 80) confidenceRanges[1]++;
+              else if (conf >= 80 && conf < 90) confidenceRanges[2]++;
+              else if (conf >= 90) confidenceRanges[3]++;
+            });
+            charts.accuracyChart.data.datasets[0].data = confidenceRanges;
+            charts.accuracyChart.update();
+          }
+        }
+      }
+
+      // Export functions
+      function exportToPDF() {
+        if (!currentPrediction) return;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.text("Bankruptcy Risk Assessment Report", 20, 30);
+
+        doc.setFontSize(12);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 50);
+        doc.text(
+          `Risk Level: ${
+            currentPrediction.prediction === 1 ? "High Risk" : "Low Risk"
+          }`,
+          20,
+          65
+        );
+        doc.text(
+          `Confidence: ${(currentPrediction.confidence * 100).toFixed(1)}%`,
+          20,
+          80
+        );
+        doc.text(
+          `Risk Score: ${currentPrediction.riskScore.toFixed(3)}`,
+          20,
+          95
+        );
+
+        doc.text("Financial Metrics:", 20, 120);
+        let y = 135;
+        Object.entries(currentPrediction.inputData).forEach(([key, value]) => {
+          doc.text(`${key}: ${value}`, 20, y);
+          y += 15;
+        });
+
+        doc.save("bankruptcy_risk_assessment.pdf");
+      }
+
+      function exportToCSV() {
+        if (!currentPrediction) return;
+
+        const headers = ["Metric", "Value"];
+        const rows = [
+          ["Date", new Date().toLocaleDateString()],
+          [
+            "Risk Level",
+            currentPrediction.prediction === 1 ? "High Risk" : "Low Risk",
+          ],
+          ["Confidence", (currentPrediction.confidence * 100).toFixed(1) + "%"],
+          ["Risk Score", currentPrediction.riskScore.toFixed(3)],
+          ...Object.entries(currentPrediction.inputData),
+        ];
+
+        const csvContent = [headers, ...rows]
+          .map((row) => row.join(","))
+          .join("\n");
+        downloadFile(csvContent, "bankruptcy_assessment.csv", "text/csv");
+      }
+
+      function exportToJSON() {
+        if (!currentPrediction) return;
+
+        const exportData = {
+          date: new Date().toISOString(),
+          prediction: currentPrediction.prediction,
+          confidence: currentPrediction.confidence,
+          riskScore: currentPrediction.riskScore,
+          inputData: currentPrediction.inputData,
+        };
+
+        const jsonContent = JSON.stringify(exportData, null, 2);
+        downloadFile(
+          jsonContent,
+          "bankruptcy_assessment.json",
+          "application/json"
+        );
+      }
+
+      function exportHistoryToCSV() {
+        if (predictionHistory.length === 0) return;
+
+        const headers = [
+          "Date",
+          "Company",
+          "Risk Level",
+          "Confidence",
+          "Risk Score",
+          "ROA",
+          "Debt Ratio",
+        ];
+        const rows = predictionHistory.map((entry) => [
+          new Date(entry.date).toLocaleDateString(),
+          entry.company,
+          entry.prediction === 1 ? "High Risk" : "Low Risk",
+          (entry.confidence * 100).toFixed(1) + "%",
+          entry.riskScore.toFixed(3),
+          entry.inputData.net_income_to_total_assets,
+          entry.inputData.total_debt_total_net_worth,
+        ]);
+
+        const csvContent = [headers, ...rows]
+          .map((row) => row.join(","))
+          .join("\n");
+        downloadFile(csvContent, "bankruptcy_history.csv", "text/csv");
+      }
+
+      function downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // Input validation and styling
+      document.querySelectorAll('input[type="number"]').forEach((input) => {
+        input.addEventListener("input", function () {
+          if (this.value !== "") {
+            this.style.borderColor = "#48bb78";
+          } else {
+            this.style.borderColor = "#e2e8f0";
+          }
+        });
+      });
+
+      // Initialize analytics on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        updateAnalytics();
+      });
+    </script>
+  </body>
+</html>
