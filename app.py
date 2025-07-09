@@ -7,11 +7,14 @@ import pandas as pd
 app = Flask(__name__)
 
 # Load model and scaler
-MODEL_PATH = os.path.join("model", "svm_top15.pkl")
-SCALER_PATH = os.path.join("model", "scaler_top15.pkl")
+MODEL_PATH = os.path.join("model", "logistic_regression_New_model.pkl")
+SCALER_PATH = os.path.join("model", "scalerNew.pkl")
 
 model = joblib.load(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
+print(
+    "Scaler was fitted with feature names:", getattr(scaler, "feature_names_in_", None)
+)
 
 # Load feature names
 import json
@@ -26,7 +29,6 @@ def normalize_name(name):
 
     name = name.lower()
     name = re.sub(r"[^a-z0-9]+", "_", name)
-    name = re.sub(r"_+", "_", name)
     name = name.strip("_")
     return name
 
@@ -52,7 +54,7 @@ def predict():
                 {
                     "error": f"Invalid input: {str(e)}",
                     "received_keys": list(data.keys()),
-                    "expected_keys": [normalize_name(name) for name in FEATURE_NAMES],
+                    "expected_keys": normalized_keys,
                     "received_data": data,
                 }
             ),
@@ -77,5 +79,11 @@ def predict():
     return jsonify({"prediction": int(pred), "confidence": confidence})
 
 
+@app.route("/ping")
+def ping():
+    return "pong", 200
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
